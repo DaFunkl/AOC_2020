@@ -1,7 +1,6 @@
 package days
 
 class Day3 : Day(3) {
-
     override fun partOne(): Any = countTrees(3, 1)
 
     override fun partTwo(): Any = arrayOf(
@@ -9,7 +8,7 @@ class Day3 : Day(3) {
     ).map { countTrees(it.first, it.second) }.reduce { acc, i -> acc * i }
 
 
-    fun countTrees(right: Int, down: Int): Long {
+    private fun countTrees(right: Int, down: Int): Long {
         var posX = 0;
         var posY = 0;
         var trees: Long = 0;

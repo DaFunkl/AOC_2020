@@ -4,7 +4,17 @@ object Tester {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        onelinerParser()
+//        onelinerParser()
+        println(1 in 5..3)
+        println(1 in 3..5)
+        println(4 in 5..3)
+        println(4 in 3..5)
+        println(3 in 5..3)
+        println(3 in 3..5)
+        println(5 in 5..3)
+        println(5 in 3..5)
+
+
     }
 
     fun onelinerParser() {
