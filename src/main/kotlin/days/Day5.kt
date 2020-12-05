@@ -24,21 +24,21 @@ class Day5 : Day(5) {
             if (i == 0 || i >= 127) {
                 continue
             }
-            for ((j, c) in row.withIndex()) {
-                if (j <= 0 || j >= 63 || c) {
+            for ((j, col) in row.withIndex()) {
+                if (j <= 0 || j >= 63 || col) {
                     continue
                 }
-                var valid = true;
+                var valid = true
                 for (r in i - 1..i + 1) {
                     for (c in j - 1..j + 1) {
                         if (r == i && c == j) continue
                         if (!grid[r][c]) {
-                            valid = false;
-                            break;
+                            valid = false
+                            break
                         }
                     }
                     if (!valid) {
-                        break;
+                        break
                     }
                 }
                 if (valid) {
