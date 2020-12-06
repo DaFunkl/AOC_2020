@@ -1,6 +1,7 @@
 package days
 
 class Day5 : Day(5) {
+
     override fun partOne(): Any = pairs.map { it.first * 8 + it.second }.maxOrNull()!!
 
     private val pairs = inputList.map {
@@ -49,3 +50,4 @@ class Day5 : Day(5) {
         return -1
     }
 }
+
