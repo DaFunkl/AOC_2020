@@ -2,7 +2,7 @@ package days
 
 class Day6 : Day(6) {
 
-    private val answers = solve()
+    private val answers by lazy { solve() }
 
     override fun partOne(): Any = answers.first
 
