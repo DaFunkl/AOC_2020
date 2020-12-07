@@ -7,11 +7,8 @@ class Day7 : Day(7) {
         var prevSize = 0
         while (prevSize != bags.size) {
             prevSize = bags.size
-            data.forEach lit@{ (bag: String, contains: List<Pair<Int, String>?>) ->
-                if (contains[0] == null) return@lit
-                if (contains.any { bags.contains(it!!.second) }) {
-                    bags.add(bag)
-                }
+            data.filter { (_, v) -> v[0] != null }.forEach { (k, v) ->
+                if (v.any { bags.contains(it!!.second) }) bags.add(k)
             }
         }
         return prevSize - 1
@@ -25,18 +22,14 @@ class Day7 : Day(7) {
             val bag = Pair(todos.keys.first(), todos[todos.keys.first()])
             todos.remove(bag.first)
             count += bag.second!!
-            data.forEach { (t, u) ->
-                if (u[0] != null && t == bag.first) {
-                    u.forEach {
-                        if (it != null) {
-                            val preVal: Int = if (todos[it.second] != null) todos[it.second]!! else 0
-                            todos[it.second] = preVal + bag.second!! * it.first
-                        }
-                    }
+            data.filter { (k, v) -> v[0] != null && k == bag.first }.forEach { (_, v) ->
+                v.forEach {
+                    val preVal = if (todos[it!!.second] != null) todos[it.second]!! else 0
+                    todos[it.second] = preVal + bag.second!! * it.first
                 }
             }
         }
-        return count-1
+        return count - 1
     }
 
     private val data = inputList.map { it.split(" bags contain ") }
@@ -45,11 +38,9 @@ class Day7 : Day(7) {
                 .split(", ").map { it1 ->
                     val spl = it1.split(" ")
                     if (spl[0] == "no") null
-                    else {
-                        Pair(spl[0].toInt(), concatStrArray(spl, " ", 1, spl.size - 2))
-                    }
+                    else Pair(spl[0].toInt(), concatStrArray(spl, " ", 1, spl.size - 2))
                 }
-        }
+        }.asSequence()
 
     private fun concatStrArray(arr: List<String>, separator: String, from: Int, to: Int): String {
         var ret = ""
