@@ -5,16 +5,26 @@ object Tester {
     @JvmStatic
     fun main(args: Array<String>) {
 //        onelinerParser()
-        println(1 in 5..3)
-        println(1 in 3..5)
-        println(4 in 5..3)
-        println(4 in 3..5)
-        println(3 in 5..3)
-        println(3 in 3..5)
-        println(5 in 5..3)
-        println(5 in 3..5)
+        for (i in 2..10) {
+            println("$i -> ${fibonacci(i)}")
+        }
 
 
+    }
+
+    fun fibonacci(n: Int): Int {
+        var first = 0
+        var second = 0
+        var third = 1
+
+        for (i in 1..n) {
+            val next_value = first + second + third
+            first = second
+            second = third
+            third = next_value
+        }
+
+        return third
     }
 
     fun onelinerParser() {
