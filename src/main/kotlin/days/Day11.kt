@@ -1,17 +1,36 @@
 package days
 
+import util.animation.Animation
+import util.animation.DrawPane11
+import kotlin.collections.ArrayList
+
+
 class Day11 : Day(11) {
 
-    val data = inputList.map { it.toCharArray() }
+    private val data = inputList.map { it.toCharArray() }
 
     override fun partOne(): Any = solve(1)
 
     override fun partTwo(): Any = solve(2)
 
-    fun solve(part: Int): Any {
+    var anim: Animation? = null
+    val enableDraw = false
+
+    fun draw(grid: ArrayList<CharArray>) {
+        if (!enableDraw) {
+            return
+        }
+        if(anim == null){
+            anim = Animation(800, 800, 11)
+        }
+        (anim!!.pane as DrawPane11).drawGrid(grid)
+    }
+
+    private fun solve(part: Int): Any {
         var currentState = ArrayList(data)
         while (true) {
-            var newState = ArrayList<CharArray>()
+            val newState = ArrayList<CharArray>()
+            draw(currentState)
             for ((i, r) in currentState.withIndex()) {
                 newState.add(CharArray(currentState[i].size))
                 for ((j, _) in r.withIndex()) {
@@ -23,16 +42,16 @@ class Day11 : Day(11) {
             }
             currentState = newState
         }
-        return currentState.sumBy { it.count { it == '#' } }
+        return currentState.sumBy { it.count { c -> c == '#' } }
     }
 
-    fun isEqual(state1: List<CharArray>, state2: List<CharArray>): Boolean {
+    private fun isEqual(state1: List<CharArray>, state2: List<CharArray>): Boolean {
         for ((i, r) in state1.withIndex()) {
             for ((j, c) in r.withIndex()) {
                 if (state2[i][j] != c) return false
             }
         }
-        return true;
+        return true
     }
 
     private fun applyRule(list: List<CharArray>, i: Int, j: Int, part: Int) = when (part) {
@@ -52,7 +71,7 @@ class Day11 : Day(11) {
 
     private fun countAdjOccupiedSeats(list: List<CharArray>, i: Int, j: Int, cap: Int = Int.MAX_VALUE): Int {
         var count = 0
-        var finished = BooleanArray(directions.size)
+        val finished = BooleanArray(directions.size)
         var r = 1
         while (finished.any { !it } && r <= cap) {
             for ((idx, p) in directions.withIndex()) {
@@ -72,7 +91,7 @@ class Day11 : Day(11) {
         return count
     }
 
-    val directions = listOf(
+    private val directions = listOf(
         Pair(-1, +0), // left
         Pair(+1, +0), // right
         Pair(+0, -1), // up
