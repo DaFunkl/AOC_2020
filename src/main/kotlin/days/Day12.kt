@@ -23,7 +23,7 @@ class Day12 : Day(12) {
                     position[0] += position[2] * it.second
                     position[1] += position[3] * it.second
                 }
-                else -> throw Exception("Unknown Action: ${it.first} -> ${it.second}")
+                else -> throw Exception("Unknown action: ${it.first} -> ${it.second}")
             }
         }
         return abs(position[0]) + abs(position[1])
@@ -33,7 +33,7 @@ class Day12 : Day(12) {
         val mult = when (action.first) {
             "L" -> Pair(-1, 1)
             "R" -> Pair(1, -1)
-            else -> throw Exception("Unknown Action: ${action.first} -> ${action.second}")
+            else -> throw Exception("Unknown action: ${action.first} -> ${action.second}")
         }
         for (i in 0 until (action.second / 90)) {
             val temp = position[2] * mult.first
