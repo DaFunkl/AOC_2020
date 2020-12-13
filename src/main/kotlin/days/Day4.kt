@@ -21,19 +21,15 @@ class Day4 : Day(4) {
             if (newPassport) {
                 newPassport = false;
                 line = l
-            } else {
-                line += " $l"
-            }
+            } else line += " $l"
         }
         return count
     }
-
 
     private fun isPassportValidP1(line: String): Boolean {
         val keys = arrayOf("byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid");
         return line.isNotEmpty() && keys.map { line.contains(it) }.reduce { acc: Boolean, i -> acc && i }
     }
-
 
     private fun isPassportValidP2(line: String): Boolean {
         if (line.isBlank()) return false;
@@ -48,60 +44,33 @@ class Day4 : Day(4) {
             when (key) {
                 "byr" -> {
                     val nr = value.toInt()
-                    if (nr !in 1920..2002) {
-                        return false
-                    }
+                    if (nr !in 1920..2002) return false
                 }
                 "iyr" -> {
                     val nr = value.toInt()
-                    if (nr !in 2010..2020) {
-                        return false
-                    }
+                    if (nr !in 2010..2020) return false
                 }
                 "eyr" -> {
                     val nr = value.toInt()
-                    if (nr !in 2020..2030) {
-                        return false
-                    }
+                    if (nr !in 2020..2030) return false
                 }
                 "hgt" -> {
-                    if (!(value.endsWith("cm") || value.endsWith("in"))) {
-                        println(value)
-                        return false
-                    }
+                    if (!(value.endsWith("cm") || value.endsWith("in"))) return false
+
                     val nr = value.substring(0, value.length - 2).toInt()
                     when (value.substring(value.length - 2)) {
-                        "in" -> if (nr !in 59..76) {
-                            return false
-                        }
-                        "cm" -> if (nr !in 150..193) {
-                            return false
-                        }
+                        "in" -> if (nr !in 59..76) return false
+                        "cm" -> if (nr !in 150..193) return false
                     }
                 }
-                "hcl" -> {
-                    if (!"^#[a-fA-F0-9]{6}\$".toRegex().matches(value)) {
-                        return false
-                    }
+                "hcl" -> if (!"^#[a-fA-F0-9]{6}\$".toRegex().matches(value)) return false
+                "ecl" -> if (!arrayOf("amb", "blu", "brn", "gry", "grn", "hzl", "oth").contains(value)) return false
+                "pid" -> if (!"^[0-9]{9}\$".toRegex().matches(value)) return false
+                "cid" -> {
                 }
-                "ecl" -> {
-                    if (!arrayOf("amb", "blu", "brn", "gry", "grn", "hzl", "oth").contains(value)) {
-                        return false
-                    }
-                }
-                "pid" -> {
-                    if (!"^[0-9]{9}\$".toRegex().matches(value)) {
-                        return false
-                    }
-                }
-                "cid" -> {}
-                else -> {
-                    return false
-                }
+                else -> return false
             }
-
         }
         return true;
     }
-
 }
