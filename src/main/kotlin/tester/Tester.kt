@@ -9,7 +9,6 @@ object Tester {
             println("$i -> ${fibonacci(i)}")
         }
 
-
     }
 
     fun fibonacci(n: Int): Int {
