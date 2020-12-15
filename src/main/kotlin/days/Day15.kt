@@ -16,15 +16,10 @@ class Day15 : Day(15) {
         }
         var p = data.last()
         do {
-            if (visited[p]) {
-                val np = (idx-1) - num[p]
-                num[p] = (idx-1)
-                p = np
-            } else {
-                visited[p] = true
-                num[p] = idx - 1
-                p = 0
-            }
+            val pp = p
+            p = if (visited[pp]) idx - 1 - num[pp] else 0
+            visited[pp] = true
+            num[pp] = idx - 1
         } while (idx++ < n)
         return p
     }
