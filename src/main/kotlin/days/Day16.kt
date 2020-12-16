@@ -2,14 +2,14 @@ package days
 
 class Day16 : Day(16) {
 
-    var rules: MutableMap<String, IntArray> = mutableMapOf()
-    var myTicket: List<Int> = listOf()
-    var nearbyTickets: MutableList<List<Int>> = mutableListOf()
-    var invalid = BooleanArray(0)
+    private var rules: MutableMap<String, IntArray> = mutableMapOf()
+    private var myTicket: List<Int> = listOf()
+    private var nearbyTickets: MutableList<List<Int>> = mutableListOf()
+    private var invalid = BooleanArray(0)
 
     override fun partOne(): Any {
         parse()
-        invalid = BooleanArray(nearbyTickets.size)
+        invalid = BooleanArray(nearbyTickets.size + 1)
         var count = 0
         nearbyTickets.withIndex().forEach { (idx, ticket) ->
             ticket.forEach {
@@ -22,7 +22,7 @@ class Day16 : Day(16) {
         return count
     }
 
-    fun isNrValid(nr: Int): Boolean {
+    private fun isNrValid(nr: Int): Boolean {
         var valid = false
         rules.forEach { (_, r) ->
             if (isNrValid(nr, r)) {
@@ -32,50 +32,45 @@ class Day16 : Day(16) {
         return valid
     }
 
-    fun isNrValid(nr: Int, r: IntArray): Boolean = nr in r[0]..r[1] || nr in r[2]..r[3]
+    private fun isNrValid(nr: Int, r: IntArray): Boolean = nr in r[0]..r[1] || nr in r[2]..r[3]
 
     override fun partTwo(): Any {
         val order = mutableMapOf<Int, String>()
-        val todos: MutableSet<String> = rules.keys
+        val todos: MutableList<String> = rules.keys.filter { it.startsWith("departure") } as MutableList
 
         nearbyTickets.add(myTicket)
-
-
         val map: MutableMap<Int, List<String>> = HashMap()
         for (i in myTicket.indices) {
-            map[i] = rules.keys.toList().filter { it.startsWith("departure") }
+            map[i] = rules.keys.toList()
         }
-
-        while (map.any { (_, v) -> v.size > 1 }) {
-            for (ticket in nearbyTickets) {
-                for ((idx, nr) in ticket.withIndex()) {
-                    if (invalid[idx] || map[idx]!!.size == 1) continue
-                    map[idx] = map[idx]!!.filter { isNrValid(nr, rules[it]!!) }
-
-                    if (map[idx]!!.size == 1) {
-                        todos.remove(map[idx]!![0])
-                        order[idx] = map[idx]!![0]
-                        println("Rule found: $idx -> ${map[idx]!![0]}")
-                        order.forEach { k, v -> println("$k -> $v") }
-                        break
-                    }
+        // filter invalid Rules
+        for ((idx, ticket) in nearbyTickets.withIndex()) {
+            if (invalid[idx]) continue
+            for ((i, nr) in ticket.withIndex()) {
+                map[i] = map[i]!!.filter { isNrValid(nr, rules[it]!!) }
+            }
+        }
+        // Extract known Rules
+        while (todos.isNotEmpty()) {
+            for ((k, v) in map) {
+                if (v.size == 1) {
+                    println("found: ${v[0]}")
+                    order[k] = v[0]
+                    todos.remove(v[0])
                 }
             }
-            break
         }
-        var count = 0
-
-        map.forEach { k, v -> println("$k -> ${v.joinToString()}") }
-
+        // multiply
+        var count = 1L
         order.forEach { (idx, it) ->
             if (it.startsWith("departure ")) {
-                count += myTicket[idx]
+                count *= myTicket[idx]
             }
         }
         return count
     }
 
-    fun parse() {
+    private fun parse() {
         var state = 0
         for (it in inputList) {
             if (it.isBlank()) continue
@@ -96,7 +91,7 @@ class Day16 : Day(16) {
                 }
                 1 -> myTicket = it.split(",").map { it.toInt() }
                 2 -> nearbyTickets.add(it.split(",").map { it.toInt() })
-                else -> throw Exception("Unkown State: $state")
+                else -> throw Exception("Unknown State: $state")
             }
         }
     }
