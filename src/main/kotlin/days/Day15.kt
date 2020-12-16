@@ -9,7 +9,7 @@ class Day15 : Day(15) {
     private fun solve(n: Int): Any {
         val num = IntArray(n + 1)
         var idx = 1
-        data.forEach {num[it] = idx++}
+        data.forEach { num[it] = idx++ }
         var p = data.last()
         do {
             val pp = p
