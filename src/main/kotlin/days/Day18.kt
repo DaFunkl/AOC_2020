@@ -30,7 +30,7 @@ class Day18 : Day(18) {
                         val b = stack.removeLast()
                         val op = operator.removeLast()
                         when (op) {
-                            "+" -> stack.add(a + b)
+//                            "+" -> stack.add(a + b)
                             "*" -> stack.add(a * b)
                         }
                     }
