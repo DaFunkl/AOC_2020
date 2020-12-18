@@ -22,15 +22,7 @@ class Day16 : Day(16) {
         return count
     }
 
-    private fun isNrValid(nr: Int): Boolean {
-        var valid = false
-        rules.forEach { (_, r) ->
-            if (isNrValid(nr, r)) {
-                valid = true
-            }
-        }
-        return valid
-    }
+    private fun isNrValid(nr: Int): Boolean = rules.any { (_, r) -> isNrValid(nr, r) }
 
     private fun isNrValid(nr: Int, r: IntArray): Boolean = nr in r[0]..r[1] || nr in r[2]..r[3]
 

@@ -1,6 +1,6 @@
 package days
 
-class Day17 : Day(17) {
+class Day18 : Day(17) {
 
     val data = arrayOf<Array<Array<Boolean>>>()
     val size = 21
