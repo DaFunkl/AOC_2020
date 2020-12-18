@@ -20,12 +20,12 @@ class Day18 : Day(18) {
             when (i) {
                 "*", "+", "(" -> operator.add(i)
                 ")" -> {
-                    var wasRemove = false
+                    var wasRemoved = false
                     if (operator.last() == "(") {
                         operator.removeLast()
-                        wasRemove = true
+                        wasRemoved = true
                     }
-                    while (!(operator.isEmpty() || operator.last() == "(")) {
+                    if(!wasRemoved) while (!(operator.isEmpty() || operator.last() == "(")) {
                         val a = stack.removeLast()
                         val b = stack.removeLast()
                         val op = operator.removeLast()
@@ -34,7 +34,7 @@ class Day18 : Day(18) {
                             "*" -> stack.add(a * b)
                         }
                     }
-                    if (!wasRemove) operator.removeLast()
+                    if (!wasRemoved) operator.removeLast()
                     while (operator.isNotEmpty() && operator.last() == "+") {
                         val a = stack.removeLast()
                         val b = stack.removeLast()
@@ -56,6 +56,8 @@ class Day18 : Day(18) {
                     }
                 }
             }
+//            println(stack.joinToString())
+//            println(operator.joinToString())
         }
         while (!(operator.isEmpty() || operator.last() == "(")) {
             val a = stack.removeLast()
@@ -66,7 +68,6 @@ class Day18 : Day(18) {
                 "*" -> stack.add(a * b)
             }
         }
-        println("${formula.joinToString(" ")} => ${stack.last()}")
         return stack.last()
     }
 
