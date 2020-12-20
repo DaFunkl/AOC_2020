@@ -66,41 +66,52 @@ class Day20 : Day(20) {
     override fun partTwo(): Any {
         val grid = constructGrid()
         val monsters = fetchMonsters()
-        var count = 0
+        val count = mutableSetOf<Pair<Int, Int>>()
+        var c2 = 0
         for (x in grid.indices) {
             for (y in grid[x].indices) {
-                count += fetchOverlap(x, y, grid, monsters)
+                count.addAll(fetchOverlap(x, y, grid, monsters))
             }
         }
-        return count
+        var total = grid.sumBy { it.count { it == '#' } }
+        return total - count.size
     }
 
-    fun fetchOverlap(x: Int, y: Int, grid: List<String>, monsters: List<List<String>>): Int {
-        var count = 0
+    var foundMonster = false
+    fun fetchOverlap(x: Int, y: Int, grid: List<String>, monsters: MutableList<List<String>>): Set<Pair<Int, Int>> {
+        val ret = mutableSetOf<Pair<Int, Int>>()
         for (monster in monsters) {
-            if (monster.size + x > grid.size || monster[0].length + y > grid[0].length) continue
-            var amt = 0
+            if (monster.size + x > 95 || monster[0].length + y > 95) continue
+            val amt = mutableSetOf<Pair<Int, Int>>()
             var valid = true
             for (i in monster.indices) {
                 val ii = i + x
                 for (j in monster[0].indices) {
+                    if (monster[i][j] == ' ') continue
                     val jj = j + y
-                    if (monster[i][j] == '#' && grid[ii][jj] != '#') {
+                    if (grid[ii][jj] != '#') {
                         valid = false; break
-                    }
-                    if (grid[ii][jj] == '#') amt++
+                    } else amt.add(Pair(ii, jj))
                 }
                 if (!valid) break
             }
-            if (valid) count += amt - 15
+            if (valid) {
+                ret.addAll(amt)
+                if(!foundMonster){
+                    foundMonster = true
+                    monsters.clear()
+                    monsters.add(monster)
+                }
+                break
+            }
         }
-        return count
+        return ret
     }
 
     fun constructGrid(): List<String> {
-        val ret = mutableListOf<String>()
+        var ret = mutableListOf<String>()
         val done = mutableSetOf<Int>()
-        var tileGrid = Array(12) { IntArray(12) }
+        val tileGrid = Array(12) { IntArray(12) }
         val gridMap: MutableMap<Pair<Int, Int>, List<String>> = mutableMapOf()
         tileGrid[0][0] = start
         done.add(start)
@@ -114,7 +125,7 @@ class Day20 : Day(20) {
             tile = rotateGrid(tile)
             if (counter++ > 4) {
                 println("Error: A1")
-                break;
+                break
             }
         }
 
@@ -123,36 +134,19 @@ class Day20 : Day(20) {
         val stack = mutableListOf<Pair<Int, Pair<Int, Int>>>()
         connections.forEach { stack.add(Pair(it.second, if (it.first == Direction.RIGHT) Pair(0, 1) else Pair(1, 0))) }
 
-        counter = 1
         while (stack.isNotEmpty()) {
             val current = stack.removeFirst()
-//            println("done: ${done.joinToString()}")
-//            println("Stack: $counter => $current")
-//            stack.forEach { println(it) }
             val id: Int = current.first
+            if (done.contains(id)) continue
             val pos: Pair<Int, Int> = current.second
             val top: Int = if (pos.first == 0) -1 else tileGrid[pos.first - 1][pos.second]
             val left: Int = if (pos.second == 0) -1 else tileGrid[pos.first][pos.second - 1]
+            val topTile = if (top == -1) null else gridMap[Pair(pos.first - 1, pos.second)]
+            val leftTile = if (left == -1) null else gridMap[Pair(pos.first, pos.second - 1)]
             tile = tiles[id]!!
             tileGrid[pos.first][pos.second] = id
-            var connections = puzzle.filter { it.p1 == id || it.p2 == id }
+            connections = puzzle.filter { it.p1 == id || it.p2 == id }
                 .map { if (it.p1 == id) Pair(it.dir1, it.p2) else Pair(it.dir2, it.p1) }
-
-//            if (id == 1871) {
-//                println("top: $top, left: $left")
-//                println("Tile:")
-//                tile.forEach { println(it) }
-//                println()
-//                if (top != -1) {
-//                    println("topTile: ")
-//                    gridMap[Pair(pos.first - 1, pos.second)]!!.forEach { println(it) }
-//                }
-//                println()
-//                if (top != -1) {
-//                    println("leftTile: ")
-//                    gridMap[Pair(pos.first, pos.second - 1)]!!.forEach { println(it) }
-//                }
-//            }
 
             var matched = false
             for (i in 1..4) {
@@ -174,7 +168,6 @@ class Day20 : Day(20) {
                 }
                 for (i in 1..4) {
                     if (matches(top, left, connections)) {
-//                    if (doMatch(gridMap[prevPos]!!, tile, current.first.second)) {
                         matched = true; break
                     }
                     connections = connections.map { Pair(rotate(it.first, 1), it.second) }
@@ -184,11 +177,10 @@ class Day20 : Day(20) {
                     throw Exception("Couldn't fit Tile: $current")
                 }
             }
+            tile = flipTile(topTile, leftTile, tile, id, pos)
+
             gridMap[pos] = tile
-            connections.filter {
-                !done.contains(it.second) &&
-                        ((pos.first == 0 && it.first == Direction.RIGHT) || it.first == Direction.RIGHT)
-            }.forEach {
+            connections.filter { !done.contains(it.second) }.forEach {
                 stack.add(
                     Pair(
                         it.second,
@@ -198,31 +190,21 @@ class Day20 : Day(20) {
                 )
             }
             done.add(id)
-
-            if (counter++ > 145) {
-                println("Error: A2")
-                break;
-            }
-
         }
 
-
-        for (i in 0 until 12) {
+        for (i in 0..11) {
             var list = mutableListOf<String>()
-            for (o in 0 until 10) list.add("")
-            for (j in 0 until 12) {
-                var gm = gridMap[i]?.get(j)
-                for (x in 0 until 10) {
-                    var add = if (gm != null && gm[x] != null)  gm[x]
-                    else "XXXXXXXXXX"
+            for (o in 0..7) list.add("")
+            for (j in 0..11) {
+                var gm = gridMap[Pair(i, j)]
+                for (x in 0..7) {
+                    var add = if (gm != null) gm[x+1].substring(1, 9)
+                    else "XXXXXXXX"
                     list[x] = list[x] + add
                 }
             }
             ret.addAll(list)
         }
-        println("Grid: ")
-        ret.forEach { println(it) }
-
         return ret
     }
 
@@ -236,6 +218,40 @@ class Day20 : Day(20) {
         }.count() == amt
     }
 
+    fun flipTile(
+        top: List<String>?,
+        left: List<String>?,
+        tile: List<String>,
+        id: Int,
+        pos: Pair<Int, Int>
+    ): List<String> {
+        val flipV = tile.map { it.reversed() }
+        val flipH = tile.reversed()
+        val flipHV = flipV.reversed()
+        val list = listOf(tile, flipV, flipH, flipHV)
+        for (l in list) {
+            if (top != null && top.last() != l.first()) continue
+            if (left != null) {
+                var invalid = false
+                for (k in 0..9) {
+                    if (left[k][9] != l[k][0]) {
+                        invalid = true; break
+                    }
+                }
+                if (invalid) continue
+            }
+            return l
+        }
+        println("Couldn't make it fit: $id, $pos")
+        return tile
+    }
+
+    fun matchesTile(top: List<String>?, left: List<String>?, tile: List<String>): Boolean {
+        if (top != null && tile.first() != top.last()) return false
+        if (left != null) for (i in 0..10) if (left[9][i] != tile[0][i]) return false
+        return true
+    }
+
     fun doMatch(a: List<String>, b: List<String>, vertical: Boolean): Boolean {
         if (vertical) for (i in a.indices) {
             if (b[i][0] != a[i][a.size - 1]) return false
@@ -243,7 +259,7 @@ class Day20 : Day(20) {
         return true
     }
 
-    fun fetchMonsters(): List<List<String>> {
+    fun fetchMonsters(): MutableList<List<String>> {
         val ret = mutableListOf<List<String>>()
         var monster = fetchMonster()
         for (i in 0 until 4) {
@@ -251,6 +267,16 @@ class Day20 : Day(20) {
             monster = rotateGrid(monster)
         }
         monster = monster.map { it.reversed() }
+        for (i in 0 until 4) {
+            ret.add(monster)
+            monster = rotateGrid(monster)
+        }
+        monster = monster.reversed()
+        for (i in 0 until 4) {
+            ret.add(monster)
+            monster = rotateGrid(monster)
+        }
+        monster = fetchMonster().reversed()
         for (i in 0 until 4) {
             ret.add(monster)
             monster = rotateGrid(monster)
@@ -268,11 +294,11 @@ class Day20 : Day(20) {
 
     fun rotate(dir: Direction, amt: Int): Direction {
         if (amt == 0) return dir
-        when (dir) {
-            Direction.UP -> return rotate(Direction.RIGHT, amt - 1)
-            Direction.RIGHT -> return rotate(Direction.DOWN, amt - 1)
-            Direction.DOWN -> return rotate(Direction.LEFT, amt - 1)
-            Direction.LEFT -> return rotate(Direction.UP, amt - 1)
+        return when (dir) {
+            Direction.UP -> rotate(Direction.RIGHT, amt - 1)
+            Direction.RIGHT -> rotate(Direction.DOWN, amt - 1)
+            Direction.DOWN -> rotate(Direction.LEFT, amt - 1)
+            Direction.LEFT -> rotate(Direction.UP, amt - 1)
         }
     }
 
