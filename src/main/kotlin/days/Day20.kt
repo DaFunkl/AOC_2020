@@ -100,12 +100,10 @@ class Day20 : Day(20) {
     fun constructGrid(): List<String> {
         val ret = mutableListOf<String>()
         val done = mutableSetOf<Int>()
-        val gridTiles = Array(12) { IntArray(12) }
+        var tileGrid = Array(12) { IntArray(12) }
         val gridMap: MutableMap<Pair<Int, Int>, List<String>> = mutableMapOf()
-
+        tileGrid[0][0] = start
         done.add(start)
-        gridTiles[0][0] = start
-
         var connections = puzzle.filter { it.p1 == start || it.p2 == start }
             .map { if (it.p1 == start) Pair(it.dir1, it.p2) else Pair(it.dir2, it.p1) }
 
@@ -122,48 +120,52 @@ class Day20 : Day(20) {
 
         gridMap[Pair(0, 0)] = tile
 
-        val stack = mutableListOf<Pair<Pair<Int, Boolean>, Pair<Int, Int>>>()
-        connections.forEach { stack.add(Pair(Pair(it.second, it.first == Direction.RIGHT), Pair(0, 0))) }
+        val stack = mutableListOf<Pair<Int, Pair<Int, Int>>>()
+        connections.forEach { stack.add(Pair(it.second, if (it.first == Direction.RIGHT) Pair(0, 1) else Pair(1, 0))) }
 
-        tile.forEach { println(it) }
-        println()
-        stack.forEach {
-            println(it)
-            tiles[it.first.first]!!.forEach { println(it) }
-            println()
-        }
-
-        counter = 0
+        counter = 1
         while (stack.isNotEmpty()) {
             val current = stack.removeFirst()
-            val id = current.first.first
-            val prevPos = current.second
-            var x = current.second.first
-            var y = current.second.second
-            if (current.first.second) y++ else x++
-            val pos = Pair(x, y)
+//            println("done: ${done.joinToString()}")
+//            println("Stack: $counter => $current")
+//            stack.forEach { println(it) }
+            val id: Int = current.first
+            val pos: Pair<Int, Int> = current.second
+            val top: Int = if (pos.first == 0) -1 else tileGrid[pos.first - 1][pos.second]
+            val left: Int = if (pos.second == 0) -1 else tileGrid[pos.first][pos.second - 1]
             tile = tiles[id]!!
-            var connections = puzzle.filter { !done.contains(it.p1) && !done.contains(it.p2) }
-                .filter { it.p1 == id || it.p2 == id }
+            tileGrid[pos.first][pos.second] = id
+            var connections = puzzle.filter { it.p1 == id || it.p2 == id }
                 .map { if (it.p1 == id) Pair(it.dir1, it.p2) else Pair(it.dir2, it.p1) }
 
+//            if (id == 1871) {
+//                println("top: $top, left: $left")
+//                println("Tile:")
+//                tile.forEach { println(it) }
+//                println()
+//                if (top != -1) {
+//                    println("topTile: ")
+//                    gridMap[Pair(pos.first - 1, pos.second)]!!.forEach { println(it) }
+//                }
+//                println()
+//                if (top != -1) {
+//                    println("leftTile: ")
+//                    gridMap[Pair(pos.first, pos.second - 1)]!!.forEach { println(it) }
+//                }
+//            }
+
             var matched = false
-            println("Tile: ")
-            tile.forEach { println(it) }
             for (i in 1..4) {
-                if (doMatch(tile, gridMap[prevPos]!!, current.first.second)) {
-                    matched = true
-                    break
+                if (matches(top, left, connections)) {
+                    matched = true; break
                 }
                 connections = connections.map { Pair(rotate(it.first, 1), it.second) }
                 tile = rotateGrid(tile)
-                println("Tile: $i")
-                tile.forEach { println(it) }
             }
 
             if (!matched) {
                 tile = tile.map { it.reversed() }
-                connections.map {
+                connections = connections.map {
                     when (it.first) {
                         Direction.RIGHT -> Pair(Direction.LEFT, it.second)
                         Direction.LEFT -> Pair(Direction.RIGHT, it.second)
@@ -171,9 +173,9 @@ class Day20 : Day(20) {
                     }
                 }
                 for (i in 1..4) {
-                    if (doMatch(tile, gridMap[prevPos]!!, current.first.second)) {
-                        matched = true
-                        break
+                    if (matches(top, left, connections)) {
+//                    if (doMatch(gridMap[prevPos]!!, tile, current.first.second)) {
+                        matched = true; break
                     }
                     connections = connections.map { Pair(rotate(it.first, 1), it.second) }
                     tile = rotateGrid(tile)
@@ -182,34 +184,62 @@ class Day20 : Day(20) {
                     throw Exception("Couldn't fit Tile: $current")
                 }
             }
-
             gridMap[pos] = tile
-            connections.forEach { stack.add(Pair(Pair(it.second, it.first == Direction.RIGHT), pos)) }
+            connections.filter {
+                !done.contains(it.second) &&
+                        ((pos.first == 0 && it.first == Direction.RIGHT) || it.first == Direction.RIGHT)
+            }.forEach {
+                stack.add(
+                    Pair(
+                        it.second,
+                        if (it.first == Direction.RIGHT) Pair(pos.first, pos.second + 1)
+                        else Pair(pos.first + 1, pos.second)
+                    )
+                )
+            }
+            done.add(id)
 
-            if (counter++ > 144) {
+            if (counter++ > 145) {
                 println("Error: A2")
                 break;
             }
 
         }
 
+
         for (i in 0 until 12) {
-            var str = ""
+            var list = mutableListOf<String>()
+            for (o in 0 until 10) list.add("")
             for (j in 0 until 12) {
-                str += gridMap[Pair(i, j)]
+                var gm = gridMap[i]?.get(j)
+                for (x in 0 until 10) {
+                    var add = if (gm != null && gm[x] != null)  gm[x]
+                    else "XXXXXXXXXX"
+                    list[x] = list[x] + add
+                }
             }
-            ret.add(str)
+            ret.addAll(list)
         }
         println("Grid: ")
-//        ret.forEach { println(it) }
+        ret.forEach { println(it) }
 
         return ret
     }
 
+    fun matches(top: Int, left: Int, con: List<Pair<Day20.Direction, Int>>): Boolean {
+        var amt = 0
+        if (top != -1) amt++
+        if (left != -1) amt++
+        return con.filter {
+            (it.second == top && it.first == Direction.UP) ||
+                    (it.second == left && it.first == Direction.LEFT)
+        }.count() == amt
+    }
+
     fun doMatch(a: List<String>, b: List<String>, vertical: Boolean): Boolean {
         if (vertical) for (i in a.indices) {
-            if (a[0][i] != b[b.size - 1][i]) return false
-        } else return a.first() == b.last()
+            if (b[i][0] != a[i][a.size - 1]) return false
+        } else return b.first() == a.last()
         return true
     }
 
