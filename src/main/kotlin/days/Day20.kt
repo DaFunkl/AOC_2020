@@ -125,8 +125,8 @@ class Day20 : Day(20) {
         val stack = mutableListOf<Pair<Pair<Int, Boolean>, Pair<Int, Int>>>()
         connections.forEach { stack.add(Pair(Pair(it.second, it.first == Direction.RIGHT), Pair(0, 0))) }
 
-        println("Start:")
-        tiles[start]!!.forEach { println(it) }
+        tile.forEach { println(it) }
+        println()
         stack.forEach {
             println(it)
             tiles[it.first.first]!!.forEach { println(it) }
@@ -137,22 +137,49 @@ class Day20 : Day(20) {
         while (stack.isNotEmpty()) {
             val current = stack.removeFirst()
             val id = current.first.first
+            val prevPos = current.second
             var x = current.second.first
             var y = current.second.second
-            if (current.first.second) x++ else y++
+            if (current.first.second) y++ else x++
             val pos = Pair(x, y)
             tile = tiles[id]!!
             var connections = puzzle.filter { !done.contains(it.p1) && !done.contains(it.p2) }
                 .filter { it.p1 == id || it.p2 == id }
                 .map { if (it.p1 == id) Pair(it.dir1, it.p2) else Pair(it.dir2, it.p1) }
 
-            var counter2 = 0
-            while (doMatch(tile, gridMap[current.second]!!, current.first.second)) {
+            var matched = false
+            println("Tile: ")
+            tile.forEach { println(it) }
+            for (i in 1..4) {
+                if (doMatch(tile, gridMap[prevPos]!!, current.first.second)) {
+                    matched = true
+                    break
+                }
                 connections = connections.map { Pair(rotate(it.first, 1), it.second) }
                 tile = rotateGrid(tile)
-                if (counter2++ > 4) {
-                    println("Error: B1")
-                    break;
+                println("Tile: $i")
+                tile.forEach { println(it) }
+            }
+
+            if (!matched) {
+                tile = tile.map { it.reversed() }
+                connections.map {
+                    when (it.first) {
+                        Direction.RIGHT -> Pair(Direction.LEFT, it.second)
+                        Direction.LEFT -> Pair(Direction.RIGHT, it.second)
+                        else -> it
+                    }
+                }
+                for (i in 1..4) {
+                    if (doMatch(tile, gridMap[prevPos]!!, current.first.second)) {
+                        matched = true
+                        break
+                    }
+                    connections = connections.map { Pair(rotate(it.first, 1), it.second) }
+                    tile = rotateGrid(tile)
+                }
+                if (!matched) {
+                    throw Exception("Couldn't fit Tile: $current")
                 }
             }
 
@@ -193,7 +220,7 @@ class Day20 : Day(20) {
             ret.add(monster)
             monster = rotateGrid(monster)
         }
-        monster.map { it.reversed() }
+        monster = monster.map { it.reversed() }
         for (i in 0 until 4) {
             ret.add(monster)
             monster = rotateGrid(monster)
