@@ -7,17 +7,18 @@ class Day21 : Day(21) {
             it.split(" (contains ")[1].replace(")", "").split(", ")
         )
     }
+    private val dictionary = mutableMapOf<String, String>()
 
     override fun partOne(): Any {
         val idxMap: MutableMap<String, MutableList<Int>> = fetchIdxMap()
-        val dictionary = mutableMapOf<String, String>()
         val known = mutableSetOf<String>()
         val possibly = mutableMapOf<String, List<String>>()
 
         for ((k, v) in idxMap) {
             possibly[k] = data[v[0]].first.toList().filter { !known.contains(it) }
             for (vi in 1 until v.size) {
-                possibly[k] = possibly[k]!!.filter { data[vi].first.contains(it) }
+                possibly[k] = possibly[k]!!.filter { data[v[vi]].first.contains(it) }
+                if (possibly[k]!!.size == 1) break
             }
             if (possibly[k]!!.size == 1) {
                 val found = possibly[k]!![0]
@@ -26,18 +27,37 @@ class Day21 : Day(21) {
                 for ((k2, v2) in possibly) {
                     possibly[k2] = v2.filter { it != found }
                 }
+                possibly.remove(k)
             }
         }
 
-        println("dictionary")
-        dictionary.forEach { t, u -> println("$t -> ${u}") }
-        println("possibly:")
-        possibly.forEach { t, u -> println("$t -> ${u}") }
-
-        return -1
+        var didChange = true
+        while (didChange) {
+            didChange = false
+            for ((k, v) in idxMap) {
+                if (possibly[k] == null) continue
+                for (vi in 0 until v.size) {
+                    val preSize = possibly[k]!!.size
+                    possibly[k] = possibly[k]!!.filter { data[v[vi]].first.contains(it) }
+                    if (preSize != possibly[k]!!.size) didChange = true
+                    if (possibly[k]!!.size == 1) break
+                }
+                if (possibly[k]!!.size == 1) {
+                    val found = possibly[k]!![0]
+                    dictionary[k] = found
+                    known.add(found)
+                    for ((k2, v2) in possibly) {
+                        possibly[k2] = v2.filter { it != found }
+                    }
+                    possibly.remove(k)
+                    didChange = true
+                }
+            }
+        }
+        return data.sumBy { it.first.count { !known.contains(it) } }
     }
 
-    fun fetchIdxMap(): MutableMap<String, MutableList<Int>> {
+    private fun fetchIdxMap(): MutableMap<String, MutableList<Int>> {
         val map: MutableMap<String, MutableList<Int>> = mutableMapOf()
         for ((idx, p) in data.withIndex()) {
             for (k in p.second) {
@@ -48,7 +68,5 @@ class Day21 : Day(21) {
         return map
     }
 
-    override fun partTwo(): Any {
-        return -1
-    }
+    override fun partTwo(): Any = dictionary.keys.sorted().map { dictionary[it] }.joinToString(",")
 }
