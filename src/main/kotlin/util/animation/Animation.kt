@@ -9,8 +9,9 @@ class Animation : JFrame {
     var pane: JPanel? = null
 
     constructor(w: Int, h: Int, day: Int) : super("AOC_20") {
-        if (day == 11) {
-            pane = DrawPane11()
+        when(day){
+            11 -> pane = DrawPane11()
+            20 -> pane = DrawPane20()
         }
         setSize(w, h)
         contentPane = pane

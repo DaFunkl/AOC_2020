@@ -1,5 +1,9 @@
 package days
 
+import util.animation.Animation
+import util.animation.DrawPane11
+import util.animation.DrawPane20
+
 class Day20 : Day(20) {
     enum class Direction { UP, DOWN, LEFT, RIGHT }
     data class Rot(val edge: String, val direction: Direction)
@@ -12,8 +16,29 @@ class Day20 : Day(20) {
     val puzzle: MutableList<Fit> = mutableListOf()
     var start = -1
 
+    var anim: Animation? = null
+    val enableDraw = true
+
+    fun draw(grid: List<String>, sleep: Long = 30) {
+        if (!enableDraw) {
+            return
+        }
+        if (anim == null) {
+//            println("start animation?")
+//            readLine()
+            anim = Animation(800, 800, 20)
+        }
+        (anim!!.pane as DrawPane20).drawGrid(grid, sleep)
+    }
+
+
     override fun partOne(): Any {
         parse()
+        if(enableDraw) {
+            println("Start?")
+            draw(mutableListOf())
+            readLine()
+        }
         for ((k, v) in tiles) {
             val list = mutableListOf<Rot>()
             list.add(Rot(v.first(), Direction.UP))
@@ -77,9 +102,18 @@ class Day20 : Day(20) {
         return total - count.size
     }
 
+    var monsterGrid: MutableList<String> = mutableListOf()
     var foundMonster = false
+
     fun fetchOverlap(x: Int, y: Int, grid: List<String>, monsters: MutableList<List<String>>): Set<Pair<Int, Int>> {
         val ret = mutableSetOf<Pair<Int, Int>>()
+
+        if (monsterGrid.size == 0) {
+            monsterGrid.addAll(grid)
+        }
+        val gridCopy: MutableList<String> = mutableListOf<String>()
+        gridCopy.addAll(monsterGrid)
+
         for (monster in monsters) {
             if (monster.size + x > 95 || monster[0].length + y > 95) continue
             val amt = mutableSetOf<Pair<Int, Int>>()
@@ -89,21 +123,42 @@ class Day20 : Day(20) {
                 for (j in monster[0].indices) {
                     if (monster[i][j] == ' ') continue
                     val jj = j + y
+                    var mCange = gridCopy[ii].toCharArray()
+                    mCange[jj] = 'M'
+                    gridCopy[ii] = mCange.joinToString("")
                     if (grid[ii][jj] != '#') {
-                        valid = false; break
+                        valid = false
+                        break
                     } else amt.add(Pair(ii, jj))
                 }
                 if (!valid) break
             }
+            draw(gridCopy, 1L)
             if (valid) {
                 ret.addAll(amt)
-                if(!foundMonster){
+
+                if (enableDraw) {
+                    for (i in monster.indices) {
+                        val ii = i + x
+                        for (j in monster[0].indices) {
+                            if (monster[i][j] == ' ') continue
+                            val jj = j + y
+                            var mCange = monsterGrid[ii].toCharArray()
+                            mCange[jj] = 'O'
+                            monsterGrid[ii] = mCange.joinToString("")
+                        }
+                    }
+                }
+
+                if (!foundMonster) {
                     foundMonster = true
                     monsters.clear()
                     monsters.add(monster)
                 }
+                draw(monsterGrid, 2L)
                 break
             }
+            draw(monsterGrid, 0L)
         }
         return ret
     }
@@ -177,9 +232,18 @@ class Day20 : Day(20) {
                     throw Exception("Couldn't fit Tile: $current")
                 }
             }
-            tile = flipTile(topTile, leftTile, tile, id, pos)
 
+            if (enableDraw) {
+                gridMap[pos] = tile
+                drawGrid(gridMap, 75L)
+            }
+
+            tile = flipTile(topTile, leftTile, tile, id, pos)
             gridMap[pos] = tile
+
+            if (enableDraw) drawGrid(gridMap)
+
+
             connections.filter { !done.contains(it.second) }.forEach {
                 stack.add(
                     Pair(
@@ -198,14 +262,33 @@ class Day20 : Day(20) {
             for (j in 0..11) {
                 var gm = gridMap[Pair(i, j)]
                 for (x in 0..7) {
-                    var add = if (gm != null) gm[x+1].substring(1, 9)
+                    var add = if (gm != null) gm[x + 1].substring(1, 9)
                     else "XXXXXXXX"
                     list[x] = list[x] + add
                 }
             }
             ret.addAll(list)
         }
+        draw(ret, 200L)
         return ret
+    }
+
+    fun drawGrid(gridMap: MutableMap<Pair<Int, Int>, List<String>>, sleep: Long = 30) {
+        var grid: MutableList<String> = mutableListOf()
+        for (i in 0..11) {
+            var list = mutableListOf<String>()
+            for (o in 0..9) list.add("")
+            for (j in 0..11) {
+                var gm = gridMap[Pair(i, j)]
+                for (x in 0..9) {
+                    var add = if (gm != null) gm[x]
+                    else "XXXXXXXXXX"
+                    list[x] = list[x] + add
+                }
+            }
+            grid.addAll(list)
+        }
+        draw(grid, sleep)
     }
 
     fun matches(top: Int, left: Int, con: List<Pair<Day20.Direction, Int>>): Boolean {
