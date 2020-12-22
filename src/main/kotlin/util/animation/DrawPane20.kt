@@ -6,8 +6,8 @@ import java.awt.Graphics
 
 class DrawPane20 : JPanel() {
     var grid: List<String>? = null
-    val scale1 = 5
-    val scale2 = 6
+    val scale1 = 7
+    val scale2 = 8
     var scale = scale1
     var hScale = scale / 2
 
