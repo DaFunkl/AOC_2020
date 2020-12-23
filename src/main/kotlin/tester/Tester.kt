@@ -5,9 +5,15 @@ object Tester {
     @JvmStatic
     fun main(args: Array<String>) {
 //        onelinerParser()
-        for (i in 2..10) {
-            println("$i -> ${fibonacci(i)}")
+//        for (i in 2..10) {
+//            println("$i -> ${fibonacci(i)}")
+//        }
+
+        val list = mutableListOf<Int>()
+        for(i in 0 .. 1000000){
+            list.add(i)
         }
+        println(list.last())
 
     }
 
