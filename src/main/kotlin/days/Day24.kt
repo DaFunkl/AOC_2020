@@ -34,12 +34,11 @@ class Day24 : Day(24) {
             todos.forEach {
                 val adj = countAdj(it, cState)
                 if (
-                    (cState.contains(it) && adj == 1) ||
+                    (cState.contains(it) && adj in 1..2) ||
                     (!cState.contains(it) && adj == 2)
                 ) nState.add(it)
             }
             cState = nState
-            if (i < 10 || i % 10 == 0) println("Day $i: ${cState.size}")
         }
         println("Day : ${cState.size}")
         return cState.size
@@ -68,6 +67,4 @@ class Day24 : Day(24) {
         NW(Pair(-1, -1)), // n
         NE(Pair(1, -1)) // p
     }
-
-
 }
