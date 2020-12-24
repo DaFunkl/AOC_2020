@@ -12,6 +12,7 @@ class Animation : JFrame {
         when(day){
             11 -> pane = DrawPane11()
             20 -> pane = DrawPane20()
+            24 -> pane = DrawPane24()
         }
         setSize(w, h)
         contentPane = pane
