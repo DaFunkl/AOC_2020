@@ -34,7 +34,7 @@ class Day24 : Day(24) {
         var cState = mutableSetOf<Pair<Int, Int>>()
         cState.addAll(set)
         draw2(cState)
-        for (i in 1..100) {
+        for (i in 1..1000) {
             val nState = mutableSetOf<Pair<Int, Int>>()
             val todos = mutableSetOf<Pair<Int, Int>>()
             cState.forEach { todos.add(it); dirs.forEach { d -> todos.add(it + d) } }
@@ -79,7 +79,7 @@ class Day24 : Day(24) {
     fun draw1(way: List<Pair<Int, Int>>, end: Pair<Int, Int>, tiles: Set<Pair<Int, Int>>, sleep: Long = 50) {
         if (!enableDraw) return
         init()
-        (anim!!.pane as DrawPane24).draw1(way, end, tiles, sleep)
+//        (anim!!.pane as DrawPane24).draw1(way, end, tiles, sleep)
     }
 
     fun draw2(tiles: Set<Pair<Int, Int>>, sleep: Long = 50) {

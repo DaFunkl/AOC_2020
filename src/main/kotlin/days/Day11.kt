@@ -14,7 +14,7 @@ class Day11 : Day(11) {
     override fun partTwo(): Any = solve(2)
 
     var anim: Animation? = null
-    val enableDraw = false
+    val enableDraw = true
 
     fun draw(grid: ArrayList<CharArray>) {
         if (!enableDraw) {
